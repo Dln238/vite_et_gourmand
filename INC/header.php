@@ -17,29 +17,40 @@ if (session_status() === PHP_SESSION_NONE) {
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="index.php">Vite & Gourmand</a>
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
+                    
                     <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
                     <li class="nav-item"><a class="nav-link" href="menus.php">Nos Menus</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
                     
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        
                         <li class="nav-item">
                             <span class="nav-link text-warning fw-bold">Bonjour, <?= htmlspecialchars($_SESSION['prenom']) ?> !</span>
                         </li>
-                        <li class="nav-item ms-2">
+
+                        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'employe')): ?>
                             <li class="nav-item ms-2">
-    <a class="btn btn-outline-light" href="admin.php">Gérer le site</a>
-</li>
+                                <a class="btn btn-outline-light btn-sm" href="admin.php">Gérer le site</a>
+                            </li>
+                        <?php endif; ?>
+
+                        <li class="nav-item ms-2">
                             <a class="btn btn-danger btn-sm" href="logout.php">Déconnexion</a>
                         </li>
+
                     <?php else: ?>
-                        <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                        
                         <li class="nav-item">
                             <a class="btn btn-warning ms-2 text-dark fw-bold" href="login.php">Connexion</a>
                         </li>
+
                     <?php endif; ?>
 
                 </ul>

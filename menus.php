@@ -1,107 +1,100 @@
 <?php
-// 1. Connexion et Header
+// 1. Démarrage de session (Toujours en premier)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once 'inc/db.php';
 include 'inc/header.php';
 
-// 2. LOGIQUE DE FILTRE
-// Par défaut, on veut tous les menus
+// 2. LOGIQUE DE FILTRE (On garde ta super logique PHP)
 $sql = "SELECT * FROM menu";
-$titre_page = "Tous nos Menus";
+$titre_page = "Toute la carte";
+$params = [];
 
-// Si l'utilisateur a cliqué sur un filtre (ex: menus.php?theme=1)
-if (isset($_GET['theme'])) {
+// Si l'utilisateur a cliqué sur un filtre
+if (isset($_GET['theme']) && !empty($_GET['theme'])) {
     $theme_id = $_GET['theme'];
+    $sql .= " WHERE theme_id = :theme_id";
+    $params['theme_id'] = $theme_id;
     
-    // On change la requête pour ne prendre que ce thème
-    $sql = "SELECT * FROM menu WHERE theme_id = :theme_id";
-    
-    // Petite astuce pour changer le titre de la page dynamiquement
-    if ($theme_id == 1) $titre_page = "Nos Menus de Noël";
-    if ($theme_id == 2) $titre_page = "Nos Menus Mariage";
-    if ($theme_id == 3) $titre_page = "Nos Offres Entreprise";
+    if ($theme_id == 1) $titre_page = "🎄 Nos Menus de Noël";
+    if ($theme_id == 2) $titre_page = "💍 Mariages & Réceptions";
+    if ($theme_id == 3) $titre_page = "💼 Offres Entreprises";
 }
 
 // 3. ON EXÉCUTE LA REQUÊTE
 try {
     $stmt = $pdo->prepare($sql);
-    
-    // Si on a un filtre, on l'envoie dans la requête
-    if (isset($theme_id)) {
-        $stmt->execute(['theme_id' => $theme_id]);
-    } else {
-        $stmt->execute(); // Sinon on exécute normalement (tout)
-    }
-    
+    $stmt->execute($params);
     $menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 } catch (Exception $e) {
-    echo "Erreur SQL";
+    echo "Erreur SQL : " . $e->getMessage();
 }
 ?>
 
-<div class="bg-light py-5">
+<div class="bg-light py-5 text-center border-bottom">
     <div class="container">
+        <h1 class="fw-bold"><?= $titre_page ?></h1>
+        <p class="text-muted">Découvrez nos créations faites maison.</p>
         
-        <h1 class="text-center mb-4"><?= $titre_page ?></h1>
-
-        <div class="d-flex justify-content-center gap-2 mb-5">
-          <div class="d-flex justify-content-center gap-2 mb-5">
-            
-            <a href="menus.php" class="btn <?= !isset($_GET['theme']) ? 'btn-dark' : 'btn-outline-dark' ?> rounded-pill px-4">
-                Tout voir
-            </a>
-
-            <a href="menus.php?theme=1" class="btn <?= (isset($_GET['theme']) && $_GET['theme'] == 1) ? 'btn-danger' : 'btn-outline-danger' ?> rounded-pill px-4">
-                🎄 Noël
-            </a>
-
-            <a href="menus.php?theme=2" class="btn <?= (isset($_GET['theme']) && $_GET['theme'] == 2) ? 'btn-warning' : 'btn-outline-warning' ?> rounded-pill px-4">
-                💍 Mariage
-            </a>
-
-            <a href="menus.php?theme=3" class="btn <?= (isset($_GET['theme']) && $_GET['theme'] == 3) ? 'btn-primary' : 'btn-outline-primary' ?> rounded-pill px-4">
-                💼 Entreprise
-            </a>
-
+        <div class="btn-group mt-3 shadow-sm" role="group">
+            <a href="menus.php" class="btn btn-outline-dark <?= !isset($_GET['theme']) ? 'active' : '' ?>">Tout</a>
+            <a href="menus.php?theme=1" class="btn btn-outline-danger <?= (isset($_GET['theme']) && $_GET['theme'] == 1) ? 'active' : '' ?>">Noël</a>
+            <a href="menus.php?theme=2" class="btn btn-outline-warning text-dark <?= (isset($_GET['theme']) && $_GET['theme'] == 2) ? 'active' : '' ?>">Mariage</a>
+            <a href="menus.php?theme=3" class="btn btn-outline-primary <?= (isset($_GET['theme']) && $_GET['theme'] == 3) ? 'active' : '' ?>">Entreprise</a>
         </div>
-        </div>
+    </div>
+</div>
 
-        <?php if (empty($menus)): ?>
-            <div class="alert alert-info text-center">
-                Aucun menu trouvé dans cette catégorie pour le moment.
-            </div>
-        <?php else: ?>
-            <div class="row">
-                <?php foreach ($menus as $menu): ?>
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100 shadow-sm hover-card">
+<div class="container py-5">
+    <?php if (empty($menus)): ?>
+        <div class="alert alert-info text-center p-5">
+            <h4>Oups !</h4>
+            <p>Aucun menu trouvé dans cette catégorie pour le moment.</p>
+            <a href="menus.php" class="btn btn-dark mt-3">Retour à la carte</a>
+        </div>
+    <?php else: ?>
+        
+        <div class="row">
+            <?php foreach ($menus as $menu): ?>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border">
+                        
+                        <?php if (!empty($menu['photo'])): ?>
+                            <img src="<?= htmlspecialchars($menu['photo']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Menu">
+                        <?php else: ?>
+                            <img src="https://placehold.co/600x400/eee/333?text=<?= urlencode($menu['titre']) ?>" class="card-img-top" alt="Image Menu">
+                        <?php endif; ?>
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title fw-bold mb-0"><?= htmlspecialchars($menu['titre']) ?></h5>
+                                <?php if ($menu['regime_id'] == 2): ?>
+                                    <span class="badge bg-success">Végé</span>
+                                <?php endif; ?>
+                            </div>
+
+                            <p class="card-text text-muted small flex-grow-1">
+                                <?= htmlspecialchars(substr($menu['description'], 0, 100)) ?>...
+                            </p>
                             
-                            <?php if (!empty($menu['photo'])): ?>
-                                <img src="<?= htmlspecialchars($menu['photo']) ?>" class="card-img-top" style="height: 250px; object-fit: cover;" alt="Menu">
-                            <?php else: ?>
-                                <img src="https://placehold.co/400x250/orange/white?text=Menu" class="card-img-top" alt="Image par défaut">
-                            <?php endif; ?>
+                            <hr>
 
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title fw-bold"><?= htmlspecialchars($menu['titre']) ?></h5>
-                                <p class="card-text text-muted flex-grow-1"><?= htmlspecialchars(substr($menu['description'], 0, 100)) ?>...</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 mb-0 text-primary fw-bold"><?= number_format($menu['prix'], 2) ?> €</span>
                                 
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <h4 class="text-warning fw-bold mb-0"><?= number_format($menu['prix'], 2) ?> €</h4>
-                                    <?php if ($menu['regime_id'] == 2): ?>
-                                        <span class="badge bg-success">Végétarien</span>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <a href="#" class="btn btn-dark mt-3 w-100">Commander</a>
+                                <a href="detail_menu.php?id=<?= $menu['id'] ?>" class="btn btn-sm btn-dark">
+                                    Voir le détail
+                                </a>
                             </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
 
-    </div>
+    <?php endif; ?>
 </div>
 
 <?php include 'inc/footer.php'; ?>

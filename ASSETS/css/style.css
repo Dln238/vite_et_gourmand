@@ -1,12 +1,107 @@
-.card {
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+/* =========================================
+   1. BASES & LAYOUT (Le Sticky Footer)
+   ========================================= */
+html,
+body {
+  height: 100%;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9; /* Un fond très légèrement gris pour faire ressortir le blanc */
+}
+
+/* Cette partie est MAGIQUE : elle pousse le footer tout en bas */
+main,
+.container {
+  flex: 1;
+}
+
+/* =========================================
+   2. NAVIGATION (Menu)
+   ========================================= */
+.navbar {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Petite ombre sous le menu */
+}
+
+.nav-link {
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #ffc107 !important; /* Devient jaune or au survol */
+}
+
+/* =========================================
+   3. CARTES (Menus & Plats)
+   ========================================= */
+.card {
+  border: none; /* On enlève la bordure grise moche */
+  border-radius: 15px; /* Coins bien arrondis */
+  overflow: hidden; /* Important pour l'image */
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+/* L'effet de survol que tu aimais, mais amélioré */
 .card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.15) !important;
-  border-color: #ffc107;
-  cursor: pointer;
+  transform: translateY(-8px); /* Monte légèrement */
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15) !important; /* Ombre douce */
+}
+
+/* Gestion des images (Pour qu'elles ne soient pas écrasées) */
+.card-img-top {
+  height: 220px; /* Hauteur fixe */
+  object-fit: cover; /* L'image remplit la case sans se déformer (crop intelligent) */
+  transition: transform 0.5s ease;
+}
+
+/* Zoom sur l'image quand on passe la souris sur la carte */
+.card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+/* Le prix et les badges */
+.badge {
+  padding: 8px 12px;
+  font-weight: 500;
+}
+
+/* =========================================
+   4. BOUTONS & ELEMENTS
+   ========================================= */
+.btn-warning {
+  background-color: #ffc107;
+  border: none;
+  color: #212529;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800; /* Un peu plus foncé au survol */
+  transform: scale(1.02); /* Petit effet de rebond */
+}
+
+/* Titres élégants */
+h1,
+h2,
+h3 {
+  color: #333;
+  font-weight: 700;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+/* =========================================
+   5. FOOTER
+   ========================================= */
+footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #eaeaea;
+  margin-top: auto; /* Sécurité supplémentaire */
 }

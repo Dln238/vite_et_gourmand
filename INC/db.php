@@ -16,3 +16,4 @@ try {
     // Si la connexion échoue, on arrête tout et on affiche l'erreur
     die("Erreur de connexion à la base de données : " . $e->getMessage());
 }
+$pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);

@@ -1,33 +1,49 @@
 <?php
-// On démarre la session (obligatoire pour rester connecté de page en page)
+// On démarre la session
 session_start();
 
-require_once 'inc/db.php';
-include 'inc/header.php';
+// Attention aux majuscules/minuscules selon ton dossier réel (INC ou inc)
+require_once 'INC/db.php'; 
+include 'INC/header.php';
 
 $error = null;
+$success = null;
 
-// Si le formulaire est envoyé
+// Si on arrive ici après une inscription réussie (?success=1)
+if (isset($_GET['success'])) {
+    $success = "Compte créé avec succès ! Vous pouvez maintenant vous connecter.";
+}
+
+// TRAITEMENT DU FORMULAIRE
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // On cherche l'utilisateur dans la base
+    // 1. On cherche l'utilisateur par son email
     $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE email = :email");
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // VÉRIFICATION DU MOT DE PASSE
-    // On regarde si l'utilisateur existe ET si le mot de passe est bon (1234)
-    if ($user && $password === $user['mot_de_passe']) {
-        // C'est gagné ! On enregistre les infos dans la session
+    // 2. VÉRIFICATION SÉCURISÉE
+    // On vérifie si l'utilisateur existe ET si le mot de passe correspond au cryptage
+    if ($user && password_verify($password, $user['mot_de_passe'])) {
+        
+        // C'est gagné ! On enregistre les infos en session
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['prenom'] = $user['prenom'];
+        $_SESSION['nom'] = $user['nom']; // Utile pour la suite
 
-        // On redirige vers l'accueil
-        header("Location: index.php");
+        // Redirection : 
+        // Si c'est un admin ou employé -> vers admin.php
+        // Si c'est un client -> vers l'accueil (index.php) ou profil
+        if ($user['role'] == 'client') {
+             header("Location: index.php");
+        } else {
+             header("Location: admin.php");
+        }
         exit;
+        
     } else {
         $error = "Email ou mot de passe incorrect.";
     }
@@ -39,10 +55,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="col-md-6">
             <div class="card shadow">
                 <div class="card-header bg-warning text-dark">
-                    <h4 class="mb-0">Connexion Espace Pro</h4>
+                    <h4 class="mb-0">Connexion Espace Client & Pro</h4>
                 </div>
                 <div class="card-body p-4">
                     
+                    <?php if ($success): ?>
+                        <div class="alert alert-success"><?= $success ?></div>
+                    <?php endif; ?>
+
                     <?php if ($error): ?>
                         <div class="alert alert-danger"><?= $error ?></div>
                     <?php endif; ?>
@@ -59,10 +79,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="submit" class="btn btn-dark w-100">Se connecter</button>
                     </form>
                     
+                    <hr>
+                    <p class="text-center mt-3">
+                        Pas encore de compte ? <br>
+                        <a href="inscription.php" class="btn btn-outline-warning mt-2">Créer un compte client</a>
+                    </p>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<?php include 'inc/footer.php'; ?>
+<?php include 'INC/footer.php'; ?>

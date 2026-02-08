@@ -1,51 +1,50 @@
 <?php
 session_start();
-// SÉCURITÉ : Si on n'est pas admin, on vire !
+require_once 'inc/db.php';
+include 'inc/header.php';
+
+// 1. SÉCURITÉ ADMIN
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
 
-require_once 'inc/db.php';
-include 'inc/header.php';
-
-// ON RÉCUPÈRE LES CATÉGORIES (pour les listes déroulantes)
+// On récupère les listes pour les menus déroulants (Thèmes et Régimes)
 $themes = $pdo->query("SELECT * FROM theme")->fetchAll();
 $regimes = $pdo->query("SELECT * FROM regime")->fetchAll();
 
-// TRAITEMENT DU FORMULAIRE (Quand on clique sur "Enregistrer")
+// 2. TRAITEMENT DU FORMULAIRE
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // On récupère ce que l'admin a écrit
+    // Récupération des données
     $titre = $_POST['titre'];
     $description = $_POST['description'];
     $prix = $_POST['prix'];
+    $photo = $_POST['photo']; // URL de l'image
     $theme_id = $_POST['theme_id'];
     $regime_id = $_POST['regime_id'];
-    
-    // Pour la photo, on met une image par défaut pour simplifier l'exercice
-    // (Plus tard, on pourra apprendre à uploader de vrais fichiers)
-    $photo = "https://placehold.co/400x300/333/white?text=" . urlencode($titre);
 
-    // REQUÊTE SQL D'INSERTION
+    // Insertion SQL
     $sql = "INSERT INTO menu (titre, description, prix, photo, theme_id, regime_id) 
             VALUES (:titre, :description, :prix, :photo, :theme_id, :regime_id)";
     
     $stmt = $pdo->prepare($sql);
-    $result = $stmt->execute([
-        'titre' => $titre,
-        'description' => $description,
-        'prix' => $prix,
-        'photo' => $photo,
-        'theme_id' => $theme_id,
-        'regime_id' => $regime_id
-    ]);
+    
+    try {
+        $stmt->execute([
+            'titre' => $titre,
+            'description' => $description,
+            'prix' => $prix,
+            'photo' => $photo,
+            'theme_id' => $theme_id,
+            'regime_id' => $regime_id
+        ]);
 
-    if ($result) {
-        // Si ça marche, on retourne au tableau de bord avec un message de succès (optionnel)
+        // Succès : retour au tableau de bord
         header("Location: admin.php");
         exit;
-    } else {
-        $error = "Une erreur est survenue lors de l'enregistrement.";
+
+    } catch (PDOException $e) {
+        $error = "Erreur lors de l'ajout : " . $e->getMessage();
     }
 }
 ?>
@@ -55,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
-                    <h4 class="mb-0">Ajouter un nouveau plat</h4>
+                    <h4 class="mb-0">Ajouter un nouveau menu</h4>
                 </div>
                 <div class="card-body p-4">
                     
@@ -66,12 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <form method="POST">
                         <div class="mb-3">
                             <label class="form-label">Nom du plat</label>
-                            <input type="text" name="titre" class="form-control" required placeholder="Ex: Risotto aux cèpes">
+                            <input type="text" name="titre" class="form-control" required placeholder="Ex: Pavé de Saumon">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <textarea name="description" class="form-control" rows="3" required placeholder="Détaillez les ingrédients..."></textarea>
+                            <textarea name="description" class="form-control" rows="3" required placeholder="Détail des ingrédients..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">URL de la photo</label>
+                            <input type="text" name="photo" class="form-control" placeholder="https://...">
+                            <div class="form-text">Vous pouvez mettre une URL d'image (Google Images, etc.)</div>
                         </div>
 
                         <div class="row">
@@ -98,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
 
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-success btn-lg">Enregistrer le menu</button>
+                            <button type="submit" class="btn btn-success btn-lg">Ajouter le menu</button>
                             <a href="admin.php" class="btn btn-outline-secondary">Annuler</a>
                         </div>
                     </form>
