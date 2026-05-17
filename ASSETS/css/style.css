@@ -1,6 +1,17 @@
-/* =========================================
+/* ==========================================================================
+   0. CONFIGURATION & VARIABLES (Charte Graphique)
+   ========================================================================== */
+:root {
+  --dark-color: #1a1d20;
+  --primary-color: #ffc107;
+  --primary-hover: #e0a800;
+  --bg-light: #f9f9f9;
+  --transition-smooth: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* ==========================================================================
    1. BASES & LAYOUT (Le Sticky Footer)
-   ========================================= */
+   ========================================================================== */
 html,
 body {
   height: 100%;
@@ -10,98 +21,224 @@ body {
 body {
   display: flex;
   flex-direction: column;
-  background-color: #f9f9f9; /* Un fond très légèrement gris pour faire ressortir le blanc */
+  background-color: var(--bg-light);
 }
 
-/* Cette partie est MAGIQUE : elle pousse le footer tout en bas */
+/* Force le contenu principal à occuper l'espace et pousse le footer en bas */
 main,
+.main-content,
 .container {
   flex: 1;
 }
 
-/* =========================================
-   2. NAVIGATION (Menu)
-   ========================================= */
-.navbar {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Petite ombre sous le menu */
+/* Animation globale d'apparition progressive (Fade-In-Up) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.nav-link {
-  transition: color 0.3s ease;
+/* ==========================================================================
+   2. NAVIGATION (Menu Premium)
+   ========================================================================== */
+.navbar-custom {
+  background-color: var(--dark-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: var(--transition-smooth);
 }
 
-.nav-link:hover {
-  color: #ffc107 !important; /* Devient jaune or au survol */
+.navbar-nav .nav-link {
+  transition: var(--transition-smooth);
 }
 
-/* =========================================
-   3. CARTES (Menus & Plats)
-   ========================================= */
+.navbar-nav .nav-link:hover {
+  color: var(--primary-color) !important;
+  transform: translateY(-1px);
+}
+
+/* Bouton Panier / Connexion dans la Nav */
+.btn-custom {
+  background-color: var(--primary-color);
+  color: var(--dark-color);
+  font-weight: 600;
+  border: none;
+  transition: var(--transition-smooth);
+}
+
+.btn-custom:hover {
+  background-color: var(--primary-hover);
+  color: var(--dark-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2) !important;
+}
+
+/* Animation discrète de pulsation sur le bouton Panier actif */
+@keyframes pulseCart {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.btn-custom {
+  animation: pulseCart 2.5s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   3. HERO BANNER (Sections de Présentation)
+   ========================================================================== */
+.hero-section {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
+    url("https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1920")
+      no-repeat center center/cover;
+  color: white;
+  padding: 100px 0;
+  margin-bottom: 50px;
+}
+
+.hero-section-small {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    url("https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920")
+      no-repeat center center/cover;
+  color: white;
+  padding: 60px 0;
+  margin-bottom: 50px;
+}
+
+.hero-section h1,
+.hero-section p,
+.hero-section-small h1,
+.hero-section-small p {
+  animation: fadeInUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+/* ==========================================================================
+   4. CARTES (Menus & Formules)
+   ========================================================================== */
+.card-menu,
 .card {
-  border: none; /* On enlève la bordure grise moche */
-  border-radius: 15px; /* Coins bien arrondis */
-  overflow: hidden; /* Important pour l'image */
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
   background: #fff;
-  transition: all 0.3s ease;
+  transition: var(--transition-smooth) !important;
+  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
 
-/* L'effet de survol que tu aimais, mais amélioré */
+/* Effet de lévitation et d'ombre dynamique au survol */
+.card-menu:hover,
 .card:hover {
-  transform: translateY(-8px); /* Monte légèrement */
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15) !important; /* Ombre douce */
+  transform: translateY(-10px) scale(1.01) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
 }
 
-/* Gestion des images (Pour qu'elles ne soient pas écrasées) */
+/* Image de carte dynamique */
 .card-img-top {
-  height: 220px; /* Hauteur fixe */
-  object-fit: cover; /* L'image remplit la case sans se déformer (crop intelligent) */
+  height: 220px;
+  object-fit: cover;
   transition: transform 0.5s ease;
 }
 
-/* Zoom sur l'image quand on passe la souris sur la carte */
+.card-menu:hover .card-img-top,
 .card:hover .card-img-top {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
-/* Le prix et les badges */
+/* Image Placeholder spécifique de la page Détails */
+.menu-image-placeholder {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.25)),
+    url("https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1000")
+      no-repeat center center/cover;
+  min-height: 410px;
+  border-radius: 20px;
+  transition: var(--transition-smooth);
+}
+
+/* Badges de caractéristiques */
 .badge {
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-weight: 500;
+  border-radius: 6px;
 }
 
-/* =========================================
-   4. BOUTONS & ELEMENTS
-   ========================================= */
+.badge-price {
+  background-color: #198754;
+  font-size: 1.1rem;
+  border-radius: 8px;
+}
+
+/* Boîte de composition de la fiche produit */
+.composition-box {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border-left: 5px solid var(--primary-color);
+}
+
+/* ==========================================================================
+   5. BOUTONS & TYPOGRAPHIE
+   ========================================================================== */
+.btn-warning,
+.btn-dark,
+.btn-outline-secondary {
+  font-weight: 600;
+  transition: var(--transition-smooth) !important;
+  border-radius: 8px;
+}
+
 .btn-warning {
-  background-color: #ffc107;
+  background-color: var(--primary-color);
   border: none;
   color: #212529;
-  font-weight: 600;
-  transition: all 0.3s ease;
 }
 
 .btn-warning:hover {
-  background-color: #e0a800; /* Un peu plus foncé au survol */
-  transform: scale(1.02); /* Petit effet de rebond */
+  background-color: var(--primary-hover);
+  transform: scale(1.03);
+  box-shadow: 0 6px 15px rgba(255, 193, 7, 0.25) !important;
 }
 
-/* Titres élégants */
+.btn-dark:hover {
+  background-color: #343a40 !important;
+  transform: scale(1.03);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-outline-secondary:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Typographie stricte */
 h1,
 h2,
-h3 {
-  color: #333;
+h3,
+h4 {
+  color: #212529;
   font-weight: 700;
 }
 
 .text-warning {
-  color: #ffc107 !important;
+  color: var(--primary-color) !important;
 }
 
-/* =========================================
-   5. FOOTER
-   ========================================= */
+/* ==========================================================================
+   6. FOOTER (Pied de page)
+   ========================================================================== */
 footer {
-  background-color: #f8f9fa;
-  border-top: 1px solid #eaeaea;
-  margin-top: auto; /* Sécurité supplémentaire */
+  background-color: var(--dark-color) !important;
+  color: #adb5bd;
+  border-top: 1px solid #2c3034;
+  margin-top: auto;
 }
