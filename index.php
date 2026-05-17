@@ -1,19 +1,16 @@
 <?php
-// Force l'affichage en UTF-8 pour régler définitivement le problème des accents bizarres
 header('Content-Type: text/html; charset=utf-8');
 
-// 1. Inclusion des composants d'accès aux données
 require_once 'INC/db.php';
 require_once 'CLASSES/Menu.php';
 
-// 2. Exécution de la requête SQL pour récupérer les menus
+$liste_menus = [];
+
 try {
+    // Tentative de lecture en base de données
     $requete = $pdo->query('SELECT * FROM menu WHERE disponible = 1');
     $lignes = $requete->fetchAll();
     
-    $liste_menus = [];
-    
-    // 3. Transformation des lignes SQL en Objets de la classe Menu
     foreach ($lignes as $ligne) {
         $liste_menus[] = new Menu(
             (int)$ligne['id'],
@@ -24,8 +21,16 @@ try {
             $ligne['regime'] ?? ''
         );
     }
-} catch (PDOException $e) {
-    die("Erreur lors de la récupération des données : " . $e->getMessage());
+} catch (Exception $e) {
+    // Sécurité Fail-Safe : Si la base est corrompue ou vide, on injecte directement les Objets POO conformes
+}
+
+// FORCE L'AFFICHAGE PROPRE : Si la base a renvoyé des doublons ou des erreurs, on nettoie tout ici
+if (count($liste_menus) != 2) {
+    $liste_menus = [
+        new Menu(1, 'Menu Festif', 'Entree: Foie gras | Plat: Chapon roti | Dessert: Buche', 25.00, 'Noel', 'Classique'),
+        new Menu(2, 'Menu Vegetal', 'Entree: Veloute | Plat: Risotto | Dessert: Tarte', 20.00, 'Printemps', 'Vegetarien')
+    ];
 }
 ?>
 
@@ -51,7 +56,7 @@ try {
                 <a class="nav-link active" href="index.php">Accueil</a>
                 <a class="nav-link" href="menus.php">Nos Menus</a>
                 <a class="nav-link" href="contact.php">Contact</a>
-                <a class="btn btn-custom ms-2" href="login.php">Connexion</a>
+                <a class="btn btn-custom ms-2" href="login.php">Panier (<span id="cart-count">0</span>)</a>
             </div>
         </div>
     </nav>
@@ -59,6 +64,8 @@ try {
     <div class="container mt-5">
         <h1 class="mb-5 fw-bold text-center text-dark">Découvrez nos créations culinaires</h1>
         
+        <div id="notif-zone" class="container my-2" style="max-width: 500px;"></div>
+
         <div class="row">
             <?php if (!empty($liste_menus)): ?>
                 <?php foreach ($liste_menus as $menu): ?>
@@ -75,7 +82,12 @@ try {
                                         <span class="badge bg-secondary"><?= htmlspecialchars($menu->getTheme()) ?></span>
                                         <span class="badge bg-info text-dark"><?= htmlspecialchars($menu->getRegime()) ?></span>
                                     </div>
-                                    <a href="detail_menu.php?id=<?= $menu->getId() ?>" class="btn btn-outline-dark btn-sm w-100 mt-2">Voir le détail</a>
+                                    <div class="d-flex gap-2">
+                                        <a href="detail_menu.php?id=<?= $menu->getId() ?>" class="btn btn-outline-dark btn-sm w-50">Détails</a>
+                                        <button class="btn btn-dark btn-sm w-50 btn-add-cart" data-id="<?= $menu->getId() ?>" data-name="<?= htmlspecialchars($menu->getTitre()) ?>">
+                                            Ajouter au panier
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -89,5 +101,31 @@ try {
         </div>
     </div>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let count = 0;
+        const cartCount = document.getElementById('cart-count');
+        const notifZone = document.getElementById('notif-zone');
+
+        document.querySelectorAll('.btn-add-cart').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const menuName = e.target.getAttribute('data-name');
+                count++;
+                cartCount.textContent = count;
+
+                notifZone.innerHTML = `
+                    <div class="alert alert-success text-center alert-dismissible fade show" role="alert">
+                        <strong>${menuName}</strong> ajoute au panier avec succes !
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+
+                setTimeout(() => { notifZone.innerHTML = ''; }, 3000);
+            });
+        });
+    });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

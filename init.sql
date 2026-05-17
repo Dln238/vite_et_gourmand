@@ -1,3 +1,4 @@
+
 -- Création de la table utilisateur
 CREATE TABLE IF NOT EXISTS utilisateur (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,7 +21,7 @@ CREATE TABLE IF NOT EXISTS menu (
     disponible BOOLEAN DEFAULT TRUE
 );
 
--- Création de la table commande avec contraintes d'intégrité (Clés étrangères)
+-- Création de la table commande avec contraintes d'intégrité
 CREATE TABLE IF NOT EXISTS commande (
     id INT AUTO_INCREMENT PRIMARY KEY,
     utilisateur_id INT NOT NULL,
@@ -41,7 +42,10 @@ CREATE TABLE IF NOT EXISTS ligne_commande (
     FOREIGN KEY (menu_id) REFERENCES menu(id) ON DELETE CASCADE
 );
 
--- Insertion de données de test (Obligatoire pour vérifier l'affichage front-end)
+-- ACTION DE NETTOYAGE : Vide la table menu pour supprimer les anciennes lignes cassées
+TRUNCATE TABLE menu;
+
+-- Insertion des lignes de test propres sans accents
 INSERT INTO menu (titre, description, prix, theme, regime, image_url) VALUES
-('Menu Festif', 'Entrée: Foie gras | Plat: Chapon rôti | Dessert: Bûche', 25.00, 'Noël', 'Classique', 'default.jpg'),
-('Menu Végétal', 'Entrée: Velouté | Plat: Risotto | Dessert: Tarte', 20.00, 'Printemps', 'Végétarien', 'default.jpg');
+('Menu Festif', 'Entree: Foie gras | Plat: Chapon roti | Dessert: Buche', 25.00, 'Noel', 'Classique', 'default.jpg'),
+('Menu Vegetal', 'Entree: Veloute | Plat: Risotto | Dessert: Tarte', 20.00, 'Printemps', 'Vegetarien', 'default.jpg');

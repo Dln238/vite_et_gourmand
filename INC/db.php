@@ -1,19 +1,19 @@
 <?php
-// Paramètres de connexion à la base de données (XAMPP par défaut)
-$host = 'localhost';
+// Configuration des variables d'environnement Docker
+$host   = 'mysql';
 $dbname = 'vite_et_gourmand';
-$username = 'root';
-$password = ''; // Sur XAMPP, le mot de passe est vide par défaut
+$user   = 'admin';
+$pass   = 'password';
 
 try {
-    // Création de la connexion PDO
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    
-    // On configure PDO pour qu'il nous prévienne en cas d'erreur (Indispensable pour débugger)
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-} catch(PDOException $e) {
-    // Si la connexion échoue, on arrête tout et on affiche l'erreur
-    die("Erreur de connexion à la base de données : " . $e->getMessage());
+    // AJOUT CRITIQUE : charset=utf8mb4 et exécution de la commande SET NAMES UTF8
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass, [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4" // Force MySQL à parler en UTF-8 avec PHP
+    ]);
+} catch (PDOException $e) {
+    die("Erreur critique de connexion à la base de données : " . $e->getMessage());
 }
-$pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+?>
